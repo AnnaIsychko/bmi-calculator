@@ -1,0 +1,117 @@
+import tkinter as tk
+from tkinter import ttk, messagebox
+import csv
+import matplotlib.pyplot as plt
+def calculate_bmi(weight, height):
+    """
+    Calculates BMI (Body Mass Index).
+    Formula: BMI = weight (kg) / (height (m))^2
+    """
+    if weight <= 0 or height <= 0:
+        return None  # Handle invalid weight or height
+    try:
+        bmi = weight / ((height / 100) ** 2)
+        return bmi
+    except ZeroDivisionError:
+        return None
+def get_bmi_category(bmi):
+    """
+    Determine BMI category based on BMI value.
+    """
+    if bmi is None:
+        return "Invalid Input"
+    elif bmi < 18.5:
+        return "Underweight"
+    elif 18.5 <= bmi < 25:
+        return "Normal"
+    elif 25 <= bmi < 30:
+        return "Overweight"
+    else:
+        return "Obese"
+
+
+def save_data():
+    name = name_entry.get()
+    age = age_entry.get()
+    height = height_entry.get()
+    weight = weight_entry.get()
+
+    # Validate input
+    if not name or not age or not height or not weight:
+        messagebox.showerror("Error", "All fields are required")
+
+
+    try:
+        age = int(age)
+        height = float(height)
+        weight = float(weight)
+    except ValueError:
+        messagebox.showerror("Error", "Invalid input for age, height, or weight")
+
+
+    bmi = calculate_bmi(weight, height)
+    category = get_bmi_category(bmi)
+
+    # Save data to CSV file
+    with open('bmi_data.csv', 'a', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow([name, age, height, weight, bmi, category])
+
+    messagebox.showinfo("Success", "Data saved successfully!")
+
+
+def show_graph():
+    categories = {"Underweight": 0, "Normal": 0, "Overweight": 0, "Obese": 0}
+
+    # Read data from CSV file
+    with open('bmi_data.csv', 'r') as file:
+        reader = csv.reader(file)
+        next(reader)  # Skip header
+        for row in reader:
+            category = row[5]
+            categories[category] += 1
+
+    # Create and display pie chart
+    plt.pie(categories.values(), labels=categories.keys(), autopct='%1.1f%%')
+    plt.title('BMI Categories Distribution')
+    plt.show()
+
+
+
+window = tk.Tk()
+window.title('BMI Calculator')
+
+frame = tk.Frame(window)
+frame.pack()
+
+name_label = tk.Label(frame, text="Name:")
+name_label.grid(row=0, column=0)
+
+name_entry = tk.Entry(frame)
+name_entry.grid(row=0, column=1)
+
+age_label = tk.Label(frame, text="Age:")
+age_label.grid(row=1, column=0)
+
+age_entry = tk.Entry(frame)
+age_entry.grid(row=1, column=1)
+
+height_label = tk.Label(frame, text="Height (cm):")
+height_label.grid(row=2, column=0)
+
+height_entry = tk.Entry(frame)
+height_entry.grid(row=2, column=1)
+
+weight_label = tk.Label(frame, text="Weight (kg):")
+weight_label.grid(row=3, column=0)
+
+weight_entry = tk.Entry(frame)
+weight_entry.grid(row=3, column=1)
+
+save_button = tk.Button(frame, text="Save", command=save_data)
+save_button.grid(row=4, column=0)
+
+#show_graph_button = tk.Button(frame, text="Show Graph", command=show_graph)
+#show_graph_button.grid(row=4, column=1)
+
+window.mainloop()
